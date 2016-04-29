@@ -1,0 +1,9 @@
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\bin\Debug\Synless Sprite Editor.exe.config
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless Sprite Editor.csprojResolveAssemblyReference.cache
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless_Sprite_Editor.Form1.resources
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless_Sprite_Editor.Properties.Resources.resources
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless Sprite Editor.csproj.GenerateResource.Cache
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\bin\Debug\Synless Sprite Editor.exe
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\bin\Debug\Synless Sprite Editor.pdb
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless Sprite Editor.exe
+d:\documents\visual studio 2015\Projects\Synless Sprite Editor\Synless Sprite Editor\obj\Debug\Synless Sprite Editor.pdb
