@@ -20,6 +20,7 @@ namespace Synless_Sprite_Editor
         Color mColor = Color.Black;
         string name;
         string size;
+        int scale = 10;
         bool picture_clickable = true;
 
         public Form1()
@@ -56,24 +57,19 @@ namespace Synless_Sprite_Editor
                         string[] names = dlg.FileName.Split('.')[0].Split('\\');
                         name = names[names.Length - 1];
 
-                        // CREATE A 10 TIMEB BIGGER IMAGE TO VIEW IT CLEARLY
-                        Bitmap tenScaledImage = new Bitmap(bmp.Width * 10, bmp.Height * 10);
+                        scale = (int)(pictureBox1.Width / bmp.Width);
+                        // CREATE A BIGGER IMAGE TO VIEW IT CLEARLY
+                        Bitmap tenScaledImage = new Bitmap(bmp.Width * scale, bmp.Height * scale);
                         using (Graphics gr = Graphics.FromImage(tenScaledImage))
                         {   // NEEDED TO AVOID THE BLURING EFFECT OF SCALING
                             // CREATE SHIFTING ERROR SOLVED BY A SLITH SHIFTING AS DESCRIBED BELLOW
                             gr.InterpolationMode = InterpolationMode.NearestNeighbor;
-                            gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width * 10, bmp.Height * 10));
+                            gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width * scale, bmp.Height * scale));
                         }
                         // FILL THE MAIN PICTUREBOX WITH THE BIGGER IMAGE
                         pictureBox1.Width = tenScaledImage.Width;
                         pictureBox1.Height = tenScaledImage.Height;
                         pictureBox1.Image = new Bitmap(tenScaledImage);
-
-                        // AUTO SIZE
-                        // pictureBox1.Width = 10 * bmp.Width + 20;
-                        // richTextBox1.Width = 50 * bmp.Width + 20;
-                        // richTextBox1.Location = new Point(pictureBox1.Location.X + pictureBox1.Width + 20, richTextBox1.Location.Y);
-                        // this.Width = richTextBox1.Location.X + richTextBox1.Width + 50;
 
                         int red = 0;
                         int green = 0;
@@ -123,48 +119,25 @@ namespace Synless_Sprite_Editor
                 break;
             }
         }
-
-        // GET THE CLICKED PIXEL AND PAST HIS COLOR ONTO TO "USE" SECTION
-        private void pictureBox1_Click(object sender, EventArgs e)
+        // BECAUSE THE PROGRAM STILL HOLD THE FILE, AN ERROR OCCUR IF THE FILE IS SAVED WITH THE SAME NAME
+        // HAVEN'T TRIED TO SOLVE IT, AS IT OFFER A NON ERASING SECURITY IF PROBLEMS HAPPEN AND YOU WANT THE ORIGINAL FILE BACK
+        private void saveBtn_Click(object sender, EventArgs e)
         {
-            if (picture_clickable)
+            try
             {
-                Bitmap bmp2 = (Bitmap)pictureBox1.Image;
-                MouseEventArgs me = (MouseEventArgs)e;
-                Point coordinates = me.Location;
-                // SHIFTING ERROR DUE TO SCALING            
-                coordinates.X += 5;
-                coordinates.Y += 5;
-                int x = (coordinates.X - coordinates.X % 10);
-                int y = (coordinates.Y - coordinates.Y % 10);
-                int red = 0;
-                int green = 0;
-                int blue = 0;
-                int color = 0;
-                red = bmp2.GetPixel(x, y).R;
-                green = bmp2.GetPixel(x, y).G;
-                blue = bmp2.GetPixel(x, y).B;
-                // AGAIN, 24BIT TO 16BIT CONVERSION
-                color += (red >> 3) << 11;
-                color += (green >> 2) << 5;
-                color += (blue >> 3);
-                textBoxCurrent.Text = color.ToString("X4");
-                Bitmap currentBmp = new Bitmap(64, 64);
-                cColor = Color.FromArgb(0, 0, 0);
-                // FILL THE "USE" PICTUREBOX WITH A 64x64 IMAGE COLORED WITH THE CLICKED PIXEL
-                for (int x1 = 0; x1 < 64; x1++)
+                SaveFileDialog dialog = new SaveFileDialog();
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    for (int y1 = 0; y1 < 64; y1++)
-                    {
-                        cColor = Color.FromArgb(red, green, blue);
-                        currentBmp.SetPixel(x1, y1, cColor);
-                    }
+                    dialog.Title = "Open Image";
+                    dialog.Filter = "bmp files (*.bmp)|*.bmp";
+                    bmp.Save(dialog.FileName);
                 }
-                pictureBoxCurrent.Image = currentBmp;
-                // NOW THAT THE "USE SECTION IS FILLED, ENABLE IT   
-                useBtn.Enabled = true;
-            }    
-        }
+            }
+            catch
+            {
+                MessageBox.Show("Use a different name than the source file.");
+            }
+        }        
 
         private void useBtn_Click(object sender, EventArgs e)
         {
@@ -186,41 +159,6 @@ namespace Synless_Sprite_Editor
             labelBlue24.Text = (trackBarBlue.Value << 3).ToString();
             replaceBtn.Enabled = true;
         }
-
-        // CHANGE THE VALUE IF ONE OF THE TRACKBAR MOVE
-        private void trackBar_Scroll(object sender, EventArgs e)
-        {
-            int red = Math.Min(trackBarRed.Value, 31);
-            int green = Math.Min(trackBarGreen.Value, 63);
-            int blue = Math.Min(trackBarBlue.Value, 31);
-            labelRed16.Text = red.ToString();
-            labelGreen16.Text = green.ToString();
-            labelBlue16.Text = blue.ToString();
-            labelRed24.Text = (red << 3).ToString();
-            labelGreen24.Text = (green << 2).ToString();
-            labelBlue24.Text = (blue << 3).ToString();
-            int color = (trackBarRed.Value << 11) + (green << 5) + blue;
-            textBoxMod.Text = color.ToString("X4");
-            red = red << 3;
-            green = green << 2;
-            blue = blue << 3;
-            mColor = Color.FromArgb(red, green, blue);
-            updateModdedColor();
-
-        }
-        private void updateModdedColor()
-        {
-            Bitmap modded = new Bitmap(64, 64);
-            for (int x1 = 0; x1 < 64; x1++)
-            {
-                for (int y1 = 0; y1 < 64; y1++)
-                {
-                    modded.SetPixel(x1, y1, mColor);
-                }
-            }
-            pictureBoxMod.Image = modded;
-        }
-
         private void replaceBtn_Click(object sender, EventArgs e)
         {
             int red = 0;
@@ -228,7 +166,7 @@ namespace Synless_Sprite_Editor
             int blue = 0;
             int color = 0;
 
-            Color oldColor = Color.FromArgb(0, 0, 0);      
+            Color oldColor = Color.FromArgb(0, 0, 0);
 
             richTextBox1.Text = "const uint16_t Ox" + name + "[" + size + "] = \n{";
 
@@ -263,9 +201,7 @@ namespace Synless_Sprite_Editor
                     richTextBox1.Text += "0x";
                     // DISPLAY "color" IN HEX
                     richTextBox1.Text += color.ToString("X4");
-                    // CHECK IF THE CURRENT PIXEL IS THE LAST OF THE LINE
-                    //if (x != bmp.Width - 1) 
-                    //{
+
                     if (x != bmp.Width - 1 || y != bmp.Height - 1)
                     {
                         richTextBox1.Text += " , ";
@@ -279,37 +215,91 @@ namespace Synless_Sprite_Editor
             }
             richTextBox1.Text += "\n};";
             richTextBox1.Text += "\n\nconst Sprite s_Ox" + name + " = {" + bmp.Width + "," + bmp.Height + "," + name + "};";
-            Bitmap newImage = new Bitmap(bmp.Width * 10, bmp.Height * 10);
+            Bitmap newImage = new Bitmap(bmp.Width * scale, bmp.Height * scale);
             using (Graphics gr = Graphics.FromImage(newImage))
             {
                 gr.SmoothingMode = SmoothingMode.Default;
                 gr.InterpolationMode = InterpolationMode.NearestNeighbor;
                 gr.PixelOffsetMode = PixelOffsetMode.Default;
-                gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width * 10, bmp.Height * 10));
+                gr.DrawImage(bmp, new Rectangle(0, 0, bmp.Width * scale, bmp.Height * scale));
             }
             pictureBox1.Image = new Bitmap(newImage);
         }
 
-
-        // BECAUSE THE PROGRAM STILL HOLD THE FILE, AN ERROR OCCUR IF THE FILE IS SAVED WITH THE SAME NAME
-        // HAVEN'T TRIED TO SOLVE IT, AS IT OFFER A NON ERASING SECURITY IF PROBLEMS HAPPEN AND YOU WANT THE ORIGINAL FILE BACK
-        private void saveBtn_Click(object sender, EventArgs e)
+        // GET THE CLICKED PIXEL AND PAST HIS COLOR ONTO TO "USE" SECTION
+        private void pictureBox1_Click(object sender, EventArgs e)
         {
-            try
+            if (picture_clickable)
             {
-                SaveFileDialog dialog = new SaveFileDialog();
-                if (dialog.ShowDialog() == DialogResult.OK)
+                Bitmap bmp2 = (Bitmap)pictureBox1.Image;
+                MouseEventArgs me = (MouseEventArgs)e;
+                Point coordinates = me.Location;
+                // SHIFTING ERROR DUE TO SCALING            
+                coordinates.X += 5;
+                coordinates.Y += 5;
+                int x = (coordinates.X - coordinates.X % scale);
+                int y = (coordinates.Y - coordinates.Y % scale);
+                int red = 0;
+                int green = 0;
+                int blue = 0;
+                int color = 0;
+                red = bmp2.GetPixel(x, y).R;
+                green = bmp2.GetPixel(x, y).G;
+                blue = bmp2.GetPixel(x, y).B;
+                // AGAIN, 24BIT TO 16BIT CONVERSION
+                color += (red >> 3) << 11;
+                color += (green >> 2) << 5;
+                color += (blue >> 3);
+                textBoxCurrent.Text = color.ToString("X4");
+                Bitmap currentBmp = new Bitmap(64, 64);
+                cColor = Color.FromArgb(0, 0, 0);
+                // FILL THE "USE" PICTUREBOX WITH A 64x64 IMAGE COLORED WITH THE CLICKED PIXEL
+                for (int x1 = 0; x1 < 64; x1++)
                 {
-                    dialog.Title = "Open Image";
-                    dialog.Filter = "bmp files (*.bmp)|*.bmp";
-                    bmp.Save(dialog.FileName);
+                    for (int y1 = 0; y1 < 64; y1++)
+                    {
+                        cColor = Color.FromArgb(red, green, blue);
+                        currentBmp.SetPixel(x1, y1, cColor);
+                    }
                 }
-            }
-            catch
-            {
-                MessageBox.Show("Use a different name than the source file.");
+                pictureBoxCurrent.Image = currentBmp;
+                // NOW THAT THE "USE SECTION IS FILLED, ENABLE IT   
+                useBtn.Enabled = true;
             }
         }
+        // CHANGE THE VALUE IF ONE OF THE TRACKBAR MOVE
+        private void trackBar_Scroll(object sender, EventArgs e)
+        {
+            int red = Math.Min(trackBarRed.Value, 31);
+            int green = Math.Min(trackBarGreen.Value, 63);
+            int blue = Math.Min(trackBarBlue.Value, 31);
+            labelRed16.Text = red.ToString();
+            labelGreen16.Text = green.ToString();
+            labelBlue16.Text = blue.ToString();
+            labelRed24.Text = (red << 3).ToString();
+            labelGreen24.Text = (green << 2).ToString();
+            labelBlue24.Text = (blue << 3).ToString();
+            int color = (trackBarRed.Value << 11) + (green << 5) + blue;
+            textBoxMod.Text = color.ToString("X4");
+            red = red << 3;
+            green = green << 2;
+            blue = blue << 3;
+            mColor = Color.FromArgb(red, green, blue);
+            updateModdedColor();
+
+        }
+        private void updateModdedColor()
+        {
+            Bitmap modded = new Bitmap(64, 64);
+            for (int x1 = 0; x1 < 64; x1++)
+            {
+                for (int y1 = 0; y1 < 64; y1++)
+                {
+                    modded.SetPixel(x1, y1, mColor);
+                }
+            }
+            pictureBoxMod.Image = modded;
+        }     
         private void resetControl()
         {
             useBtn.Enabled = false;
